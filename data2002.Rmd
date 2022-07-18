@@ -1,0 +1,34 @@
+---
+title: "Untitled"
+author: "yangyi"
+date: "10/29/2021"
+output: html_document
+---
+
+The purpose of this report is to explore the influencing factors of infant weight and provide guidance for reducing infant underweight deaths. The data came from Baystate Medical Center, Springfied during 1986 which contains 189 rows and 10 columns. There are ten variables in the report which is indicator of birth weight less than 2.5kg (low), mother’s age (age), mother’s weight in pounds at last menstrual period (lwt), mother’s race (race), smoking status during pregnancy (smoke), number of previous premature labors (ptl), history of hypertension (ht), presence of uterine irritability (ui), number of physician visits during the first trimester (ftv) and birth weight in grams (bwt). We found that “low”, ”race”, “smoke” “ptl”, “ht”, “ui” and “ftv” are categorical variables and “age”, “lwt” and “bwt” are numerical variables. 
+The WHO (1) has reported that low birth weight remains a global public health challenge. This not only affects maternal hypertension and acute infections, but also increases infant mortality and the likelihood of long-term disability. The report’s audience are WHO, national Medical organizations and maternal. We appealed to the audience to raise their health awareness during pregnancy, reduce uterine irritability, take regular prenatal care, and reduce smoking.
+Therefore, our report may provide a useful reference for readers concerned about issues in this field. 
+
+
+Variable | Description
+------ | ------
+  low | indicator of birth weight less than 2.5kg
+
+age | mother's age in years
+
+lwt | mother's weight in pounds at last menstrual period
+
+race | mother's race(1 = white, 2 = black, 3 = other)
+
+smoke | smoking status during pregnancy
+
+pt1 | number of previous premature labours
+
+ht | history of hypertension
+
+ui | presence of uterine irritability
+
+ftv | number of physician visits during the first trimester
+
+bwt | birth weight in grams
+

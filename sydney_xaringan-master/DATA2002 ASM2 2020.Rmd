@@ -1,0 +1,48 @@
+---
+title: "DATA2002 ASM 2021"
+author: 
+- "Zhimin Liu 490238439"
+- "Yunshuo Zhang 500025673"
+- "Yi Ynag 500021295"
+- "Dahui Liu 490582941"
+- "Xinyi Jiang 500104299 "
+date: "31/10/2021"
+output:
+  xaringan::moon_reader:
+    css: ["default", "assets/sydney-fonts.css", "assets/sydney.css"]
+    self_contained: false # if true, fonts will be stored locally
+    seal: true # show a title slide with YAML information
+    includes:
+      in_header: "assets/mathjax-equation-numbers.html"
+    nature:
+      beforeInit: ["assets/remark-zoom.js", "https://platform.twitter.com/widgets.js"]
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: '16:9' # alternatives '16:9' or '4:3' or others e.g. 13:9
+      navigation:
+        scroll: false # disable slide transitions by scrolling
+      
+---
+
+class: sydney-blue
+# Contents 
+.pull-left[
+- Introduction
+- Data description
+- Model selection
+- Assumption checking
+- Discussion of results
+- Conclusion
+]
+.pull-right[
+```{r, echo = FALSE, out.height="200%", fig.height=50, out.width="200%", fig.align='center'}
+
+knitr::include_graphics("baby.jpg")
+``` 
+]
+
+
+---
+
+

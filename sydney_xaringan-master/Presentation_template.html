@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>DATA2002 ASM 2021</title>
+    <meta charset="utf-8" />
+    <meta name="author" content="Yunshuo Zhang500025673, Zhimin Liu,Yi Ynag500021295,Dahui Liu 490582941,Xinyi Jiang500104299" />
+    <link href="Presentation_template_files/remark-css-0.0.1/default.css" rel="stylesheet" />
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { equationNumbers: { autoNumber: "AMS" } },
+      });
+    </script>
+    <style>
+    .mjx-mrow a {
+      color: black;
+      pointer-events: none;
+      cursor: default;
+    }
+    </style>
+    <link rel="stylesheet" href="assets/sydney-fonts.css" type="text/css" />
+    <link rel="stylesheet" href="assets/sydney.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+class: center, middle, inverse, title-slide
+
+# DATA2002 ASM 2021
+### Yunshuo Zhang500025673, Zhimin Liu,Yi Ynag500021295,Dahui Liu 490582941,Xinyi Jiang500104299
+### 31/10/2021
+
+---
+
+class: sydney-blue
+
+# Contents 
+
+- Data description 
+- Model selection 
+- Assumption checking 
+- Discussion of results 
+- Conclusion and Limitation 
+- Reference
+---
+# Introduction
+
+---
+# Data description
+
+.scroll-output[
+Variable | Description
+------ | ------
+M | percentage of males aged 14-24
+So | indicator variable for a southern state
+Ed | mean years of schooling
+Po1 | police expenditure in 1960
+Po2 | police expenditure in 1959
+LF | labour force participation rate
+M.F | number of males per 1000 females
+Pop | state population
+NW | number of nonwhites per 1000 people
+U1 | unemployment rate of urban males 14-24
+U2 | unemployment rate of urban males 35-39
+GDP | gross domestic product per head
+Ineq | income inequality
+Prob | probability of imprisonment
+Time | average time served in state prisons
+y | rate of crimes in a particular category per head of population
+.content-box-yellow[
+$$
+\bar{btw}=\beta_0+\beta_1low+\beta_2age+\beta_3lwt+\beta4race+\beta_5smoke+\beta_6ptl+\beta_7ht+\beta_8ui+\beta_9ftv
+$$
+]
+
+
+
+]
+
+
+
+---
+class: center
+# Model selection
+## Before Multiple Regression: plot
+
+.scroll-output[
+
+![](Presentation_template_files/figure-html/unnamed-chunk-2-1.png)&lt;!-- --&gt;
+]
+---
+
+
+
+## Multiple Regression
+
+.scroll-output[
+
+
+
+```
+## Analysis of Variance Table
+## 
+## Model 1: bwt ~ low + race + smoke + ui
+## Model 2: bwt ~ low + age + lwt + race + smoke + ptl + ht + ui + ftv
+##   Res.Df      RSS Df Sum of Sq      F Pr(&gt;F)
+## 1    184 34422534                           
+## 2    179 33671653  5    750881 0.7983 0.5522
+```
+
+
+]
+---
+## Variable Selection
+.scroll-output[
+
+```
+## Start:  AIC=1276.54
+## lwt ~ low + age + race + smoke + ptl + ht + ui + ftv + bwt
+## 
+##         Df Sum of Sq    RSS    AIC
+## - smoke  1     105.6 145925 1274.7
+## - ui     1     205.2 146024 1274.8
+## - low    1     214.6 146034 1274.8
+## - bwt    1     700.3 146519 1275.5
+## - ptl    1    1475.6 147295 1276.5
+## &lt;none&gt;               145819 1276.5
+## - ftv    1    1772.2 147591 1276.8
+## - race   1    1829.1 147648 1276.9
+## - age    1    2594.2 148413 1277.9
+## - ht     1   11915.3 157735 1289.4
+## 
+## Step:  AIC=1274.68
+## lwt ~ low + age + race + ptl + ht + ui + ftv + bwt
+## 
+##        Df Sum of Sq    RSS    AIC
+## - ui    1     194.1 146119 1272.9
+## - low   1     207.4 146132 1273.0
+## - bwt   1     828.7 146754 1273.8
+## &lt;none&gt;              145925 1274.7
+## - ptl   1    1675.5 147600 1274.8
+## - race  1    1784.0 147709 1275.0
+## - ftv   1    1800.7 147725 1275.0
+## - age   1    2745.1 148670 1276.2
+## - ht    1   11965.1 157890 1287.6
+## 
+## Step:  AIC=1272.93
+## lwt ~ low + age + race + ptl + ht + ftv + bwt
+## 
+##        Df Sum of Sq    RSS    AIC
+## - low   1     165.6 146285 1271.2
+## - bwt   1    1128.5 147247 1272.4
+## &lt;none&gt;              146119 1272.9
+## - race  1    1765.1 147884 1273.2
+## - ftv   1    1846.2 147965 1273.3
+## - ptl   1    2007.5 148126 1273.5
+## - age   1    2869.6 148989 1274.6
+## - ht    1   12708.2 158827 1286.7
+## 
+## Step:  AIC=1271.15
+## lwt ~ age + race + ptl + ht + ftv + bwt
+## 
+##        Df Sum of Sq    RSS    AIC
+## &lt;none&gt;              146285 1271.2
+## - race  1    1728.3 148013 1271.4
+## - ftv   1    1848.4 148133 1271.5
+## - ptl   1    2200.6 148485 1272.0
+## - age   1    3023.3 149308 1273.0
+## - bwt   1    4596.0 150881 1275.0
+## - ht    1   12571.4 158856 1284.7
+```
+
+```
+## 
+## Call:
+## lm(formula = lwt ~ age + race + ptl + ht + ftv + bwt, data = birthwt)
+## 
+## Coefficients:
+## (Intercept)          age         race          ptl           ht          ftv  
+##   93.696096     0.789243    -3.415553    -7.064132    33.915197     3.050696  
+##         bwt  
+##    0.007096
+```
+
+```
+## 
+## Call:
+## lm(formula = lwt ~ age + race + ptl + ht + ftv + bwt, data = birthwt)
+## 
+## Residuals:
+##     Min      1Q  Median      3Q     Max 
+## -59.248 -17.949  -5.974  12.418 103.789 
+## 
+## Coefficients:
+##              Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept) 93.696096  14.250975   6.575 4.99e-10 ***
+## age          0.789243   0.406942   1.939  0.05399 .  
+## race        -3.415553   2.329238  -1.466  0.14427    
+## ptl         -7.064132   4.269224  -1.655  0.09972 .  
+## ht          33.915197   8.575642   3.955  0.00011 ***
+## ftv          3.050696   2.011691   1.516  0.13113    
+## bwt          0.007096   0.002967   2.391  0.01781 *  
+## ---
+## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+## 
+## Residual standard error: 28.35 on 182 degrees of freedom
+## Multiple R-squared:  0.1679,	Adjusted R-squared:  0.1405 
+## F-statistic:  6.12 on 6 and 182 DF,  p-value: 7.322e-06
+```
+
+```
+## starting httpd help server ... done
+```
+
+]
+---
+# Assumption checking
+.scroll-output[
+.content-box-yellow[linearity]
+.content-box-blue[independence]
+.content-box-green[homoskedasticity]
+.content-box-purple[normality]
+## Hypothesis Test of age
+
+Hypothesis: `\(H_0:\beta_2=0, H_1:\beta_2\neq0\)`
+
+Assumptions: the residuals `\(\varepsilon_i\)` follows a normal distribution with equal variance.
+
+![](Presentation_template_files/figure-html/unnamed-chunk-6-1.png)&lt;!-- --&gt;![](Presentation_template_files/figure-html/unnamed-chunk-6-2.png)&lt;!-- --&gt;
+
+
+Test statistic: `\(T=\frac{\bar{\beta_4}}{SE(\bar{\beta_4})}\)`which follows a t distribution with `\(n-p\)` degrees of freedom under `\(H_0\)`.
+
+Observed Test Statistics: `\(t_0=-0.984\)`
+
+p-value: `\(2P(t_{n-p}&gt;=|t_0|)=2P(t_{180}&gt;=-0.984)=0.33&gt;0.05\)`
+
+Conclusion: We do not reject as the p-value is quite large. Hence, there is no evidence to suggest that there is a significant relationship between birth weight and mother's age, so it could be dropped from the model.
+]
+---
+# Discussion of results
+## Comparing Full Model and Reduced Model
+.scroll-output[
+
+]
+---
+## k-fold
+.scroll-output[
+
+]
+---
+# Conclusion and Limitation
+.scroll-output[
+.pull-left[
+## Limitation
+
+1. Since the data comes from Baystate Medical Center, it does not have good universality and integrity, which reduces the accuracy of the results.
+
+2. The age of the mother in the data may not be average enough, resulting in faults in the scatter diagram
+
+3. In order to study the main related factors affecting infant weight, we removed the relatively small factors, which may lead to the deviation of the results.
+]
+.pull-right[
+## Conclusion
+
+The result of this report found that the infant birthweight is correlated with low indicator, race, smoke, uterine irritability
+
+]
+
+]
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="assets/remark-zoom.js"></script>
+<script src="https://platform.twitter.com/widgets.js"></script>
+<script>var slideshow = remark.create({
+"highlightStyle": "github",
+"highlightLines": true,
+"countIncrementalSlides": false,
+"ratio": "16:9",
+"navigation": {
+"scroll": false
+}
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>

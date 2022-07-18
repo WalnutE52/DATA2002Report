@@ -1,0 +1,381 @@
+---
+---
+---
+
+```{r}
+library(MASS)
+birthwt
+```
+
+Q: How to show the descrption of variables in dataframe?
+
+A: markdown table generator
+
+Variable \| Description
+------ \| ------
+M \| percentage of males aged 14-24
+So \| indicator variable for a southern state
+Ed \| mean years of schooling
+Po1 \| police expenditure in 1960
+Po2 \| police expenditure in 1959
+LF \| labour force participation rate
+M.F \| number of males per 1000 females
+Pop \| state population
+NW \| number of nonwhites per 1000 people
+U1 \| unemployment rate of urban males 14-24
+U2 \| unemployment rate of urban males 35-39
+GDP \| gross domestic product per head
+Ineq \| income inequality
+Prob \| probability of imprisonment
+Time \| average time served in state prisons
+y \| rate of crimes in a particular category per head of population
+
+```{r}
+DT::datatable(
+  head(birthwt,10),
+  fillContainer = FALSE, option=list(pagelength=8)
+  
+)
+```
+
+```{r}
+options(servr.daemon = TRUE)
+```
+
+## Data Explanation
+
+The `birthwt` data frame has 189 rows and 10 columns. The data were collected at Baystate Medical Center, Springfield, Mass during 1986.
+
+`low`
+
+:   indicator of birth weight less than 2.5 kg.
+
+    体重指标\<2.5kg
+
+`age`
+
+:   mother's age in years.
+
+    母亲年龄
+
+`lwt`
+
+:   mother's weight in pounds at last menstrual period.
+
+    母亲在最后一次月经期间的重量
+
+`race`
+
+:   **mother's race (`1` = white, `2` = black, `3` = other).**
+
+    母亲种族
+
+`smoke`
+
+:   **smoking status during pregnancy.**
+
+    怀孕期间是否吸烟
+
+`ptl`
+
+:   number of previous premature labours.
+
+    孕前的早产劳动力的数量
+
+`ht`
+
+:   history of hypertension.
+
+    高血压病史
+
+`ui`
+
+:   **presence of uterine irritability.**
+
+    子宫烦躁
+
+`ftv`
+
+:   number of physician visits during the first trimester.
+
+    第一个三个月期间的医师次数。
+
+`bwt`
+
+:   birth weight in grams.
+
+    婴儿体重（克）
+
+\
+
+```{r}
+?birthwt
+```
+
+## Before Multiple Regression: plot
+
+Q: Why do we need to make pairs plot?
+
+A: it is always good to have a look at the relationship between pairwise variables before we get down to do model fitting.
+
+```{r}
+pairs(birthwt)
+GGally::ggpairs(birthwt)
+library(tidyverse)
+library(ggplot2)
+birthwt%>%
+  ggplot()+
+  aes(x=race,y=bwt,fill=race)+
+  geom_boxplot()+
+  geom_jitter()+
+  
+  facet_wrap(~race)
+  
+
+
+```
+
+```{r}
+qtlcharts::iplotCorr(birthwt)
+```
+
+## Multiple Regression
+
+Q: What could we conclude from the summary of this linear model?
+
+A: infant birthweight is correlated with low indicator, race, smoke, uterine irritability(子宫烦躁)
+
+Highly correlations are: uterine irritability(子宫烦躁) and low indicator.
+
+Q: what is the least significant variable?\
+A: number of physician visits during the first trimester is the least significant(highest p value=0.8071), so we could drop it using an information criterion.
+
+```{r}
+lm_birthwt_full=lm(bwt~.,data=birthwt)
+library(tidyverse)
+birthwt_reduced=birthwt%>%
+  dplyr::select(low,race,smoke,ui,bwt)
+lm_birthwt_reduced=lm(bwt~.,data=birthwt_reduced)
+# SSR_full=broom::tidy(aov(lm_birthwt_full))$sumsq[10]
+# SSR_reduced=broom::tidy(aov(lm_birthwt_reduced))$sumsq[5]
+# p=9
+# g=5
+# n=189
+# MSE_full=broom::tidy(aov(lm_birthwt_full))$meansq[10]
+# f=((SSR_full-SSR_reduced)/(p-g))/MSE_full
+# p=1-pf(f,p-g,n-p)
+anova(lm_birthwt_reduced,lm_birthwt_full)
+
+```
+
+
+Q: How to compare full model and reduced model?\
+A: Use tab_model( ) to look at their r square.
+
+```{r}
+# ggfortify::autoplot(lm_birthwt_reduced,which=1:2)
+# ggfortify::autoplot(lm_birthwt,which=1:2)
+#what does the regression look like?
+
+sjPlot::tab_model(lm_birthwt_full,lm_birthwt_reduced)
+?tab_model
+
+```
+
+```{r}
+lm_birthwt=lm(bwt~.,data=birthwt)
+summary(lm_birthwt)
+```
+
+## 
+
+Q: Could we drop age, lwt, ptl, ht, ftv as they have p value\<0.05?
+
+A: No we could not. Because p values are only testing individual variable against the whole model. If we were to drop one first, we will drop ftv first, because it has the highest p value. After that, we will do a formal test to see if the coefficient of age is significant.
+
+Q: What variables does AIC stepwise algorithm drop by adding and eliminating variables?
+
+Actually if we using both directions in stepwise algorithm, it drops 5 variables: age, lwt, ptl, ht, ftv
+
+**Q: What linear model could we write from this AIC stepwise algorithm?**\
+A:
+
+$\bar{bwt}=3586.50-1139.20low-97.34race-157.42smoke-303.19ui$
+
+**Q: What proportion of the variability of infant birth weight could be explained by this step-wise selected model?**
+
+A: 65.6% of the variability of infant birth weight is explained by the regression on low indicator of birth weight, race, smoke and ui.
+
+```{r}
+step_birthwt=step(lm_birthwt,trace=T)
+step_birthwt
+summary(step_birthwt)
+?birthwt
+```
+
+Q: What is the difference between using forward stepwise and backward stepwise?
+
+```{r}
+M0=lm(bwt~1,data=birthwt)
+M1=lm(bwt~.,data=birthwt)
+step_forward=step(M0,scope=list(lower=M0,upper=M1),direction="forward",trace=FALSE)
+step_backward=step(lm_birthwt,trace=F,direction="backward")
+step_both=step(lm_birthwt,trace=F,direction="both")
+sjPlot::tab_model(step_forward,step_backward,step_both, dv.labels=c("Forward model","Backward model","Both model"))
+
+
+```
+
+## Formal Hypothesis Test of age
+
+First, we define the model with population parameters:
+
+$$
+\bar{btw}=\beta_0+\beta_1low+\beta_2age+\beta_3lwt+\beta4race+\beta_5smoke+\beta_6ptl+\beta_7ht+\beta_8ui+\beta_9ftv
+$$
+
+we want to test if $\beta_2=0$
+
+Hypothesis: $H_0:\beta_2=0, H_1:\beta_2\neq0$
+
+Assumptions: the residuals $\varepsilon_i$ follows a normal distribution with equal variance.
+
+Q: What could you see from the residual plot and QQ plot?
+
+A: There are some data fanning out in the residual plot, which suggest there maybe some heteroskedasticity in our data. But the data are close to the diagonal line in the qq plot, so the normality assumption is roughly satisfied.
+
+Q: How to comment on the linearity of residual in this plot?
+
+```{r}
+library(ggfortify)
+autoplot(step_birthwt,which=1:2)
+hist(birthwt$bwt,breaks=20)
+```
+
+Test statistic: $T=\frac{\bar{\beta_4}}{SE(\bar{\beta_4})}$which follows a t distribution with $n-p$ degrees of freedom under $H_0$.
+
+Observed Test Statistics: $t_0=-0.984$
+
+p-value: $2P(t_{n-p}>=|t_0|)=2P(t_{180}>=-0.984)=0.33>0.05$
+
+Conclusion: We do not reject as the p-value is quite large. Hence, there is no evidence to suggest that there is a significant relationship between birth weight and mother's age, so it could be dropped from the model.
+
+**Q: When do we use forward selection, backward elimination or both direction?**
+
+Q: how to look at the linearity of this plot? Not violated because of no smiley face??
+
+Q: When deciding which one to drop, do we always pick the variable with the second least significant p value?\
+Q: Do we need to add specific prediction? What is the suggested new dataset? Do we need to find some reference?
+
+Q: Do we need to use drop1( ) and add1( )? Can we directly use step( )?
+
+```{r}
+install.packages("equationmatic")
+library(equationmatic)
+```
+
+![]()
+
+```{r}
+install.packages('xaringan')
+remotes::install_github("mitchelloharawild/icons")
+install.packages("RefManageR")
+install.packages("DT")
+install.packages("tidyverse")
+```
+
+```{r}
+install.packages("xaringan")
+library(xaringan)
+```
+
+## Assumption check
+Check the multiple linear regression assumptions.
+
+Full model 
+```{r cars}
+library(ggfortify)
+autoplot(lm_birthwt_full,which=1:2) + theme_bw()
+```
+
+Reduced model
+```{r}
+autoplot(lm_birthwt_reduced,which=1:2) + theme_bw()
+```
+There are not much difference on two plots between full model and reduced mode.
+
+1.Linearity: There are no obvious patterns in the residual vs fitted values plots of both models. So it doesn't appear that we have misspecified the model.
+
+2.Independence: According to background story of birthwt dataset, the dataset is a random sample. Observations are not related to one another.
+
+3.Homoskedasticity: There are some fanning out of the residuals in the residuals vs fitted plots of both models. There may be some heteroskedasticity in our data.
+
+4.Normality: Both QQ plots shows the majority of the points lie close to the diagonal lines which indicate that the normality assumption is reasonably well satisfied.
+
+## Compare Two Models
+
+Q: How to know How well do we predict observations that we didn't use to build the model?
+
+A: use k-fold cross validation:
+
+t building a training set and using it to predict observations from a test set
+
+known(pretend)-->unknown(pretend)
+
+```{r}
+#install.packages("caret")
+library(caret)
+cv_full=train(
+  bwt~.,data=birthwt,
+  method="lm",
+  trControl=trainControl(
+    method="cv",number=10,
+    verboseIter=FALSE
+  )
+)
+cv_full
+
+cv_reduced=train(
+  bwt~low+ui+race+smoke,data=birthwt,
+  method="lm",
+  trControl=trainControl(
+    method="cv",number=10,
+    verboseIter=FALSE
+  )
+)
+cv_reduced
+```
+
+Variable \| Description
+------ \| ------
+M \| percentage of males aged 14-24
+So \| indicator variable for a southern state
+Ed \| mean years of schooling
+Po1 \| police expenditure in 1960
+Po2 \| police expenditure in 1959
+LF \| labour force participation rate
+M.F \| number of males per 1000 females
+Pop \| state population
+NW \| number of nonwhites per 1000 people
+U1 \| unemployment rate of urban males 14-24
+U2 \| unemployment rate of urban males 35-39
+GDP \| gross domestic product per head
+Ineq \| income inequality
+Prob \| probability of imprisonment
+Time \| average time served in state prisons
+y \| rate of crimes in a particular category per head of population
+
+Q: How to see which variables could be dropped from the model?\
+A: use drop1(lm,test="F")
+
+Q: How to update the refitted model by dropping one variable?\
+A: use update(lm,.\~.xi)
+
+```{r}
+drop1(M1,test="F")
+M2=update(M1,.~.-ftv)
+drop1(M2,test="F")
+
+drop1(step_birthwt,test="F")
+
+```

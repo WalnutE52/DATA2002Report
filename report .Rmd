@@ -1,0 +1,87 @@
+---
+title: "presentation_new"
+output: html_document
+---
+
+# Data Description
+
+### IDA(Initial Data Analysis)
+
+```{r}
+birthwt=MASS::birthwt
+birthwt
+```
+
+```{r}
+#factorize categorical variables
+library(tidyverse)
+birthwt$race=factor(birthwt$race,labels=c("white","black","other"))
+birthwt$smoke=factor(birthwt$smoke,labels=c("No","Yes"))
+birthwt$ht=factor(birthwt$ht,labels=c("No","Yes"))
+birthwt$ui=factor(birthwt$ui,labels=c("No","Yes"))
+
+```
+
+```{r}
+#rename columns to make it readable
+colnames(birthwt) <- c("birthwt.below.2500", "mother.age",
+"mother.weight", "race",
+"mother.smokes", "previous.prem.labor",
+"hypertension", "uterine.irr",
+"physician.visits", "birthwt.grams")
+
+```
+
+# Appropriate Model Selection+Assumption Checking
+
+## pairplot
+
+```{r}
+#pairplot
+GGally::ggpairs(birthwt)
+```
+
+## Full model
+
+```{r}
+#full model
+##without low, because low is the outcome
+birthwt_lm<- lm (birthwt.grams ~ . - birthwt.below.2500, data=birthwt)
+summary(birthwt_lm)
+equatiomatic::extract_eq(birthwt_lm,use_coefs = T) #we should further remove insignificant factors
+```
+
+## Reduced Model
+
+```{r}
+#reduced model
+#variable selection using AIC
+birthwt_step=step(birthwt_lm)
+equatiomatic::extract_eq(birthwt_step,use_coefs = T)
+```
+
+```{r}
+#assumption checking of reduced model
+library(ggfortify)
+autoplot(birthwt_step,which=1:2)#QUESTION:should we check assumption before the linear model?
+```
+
+## Log Model
+
+```{r}
+#log model
+birthwt_log=lm (log(birthwt.grams) ~ . - birthwt.below.2500, data=birthwt)
+summary(birthwt_lm)
+autoplot(birthwt_log,which=1:2)
+```
+
+```{r}
+#assumption checking of log model
+birthwt_log_step=step(birthwt_log,test="F")
+equatiomatic::extract_eq(birthwt_log_step,use_coefs = T) 
+#assumption checking of log model
+summary(birthwt_log_step)
+autoplot(birthwt_log_step,which=1:2)
+```
+
+# Result

@@ -1,0 +1,20 @@
+tab model
+The significant variable in the full model is ht with P < 0.05. The four independent variables in the reduced model are significant. The R2 = 0.171 of the full model can only explain 17.1% of the data variation, while the R2 = 0.656 of the reduced model can explain 65.6% of the data variation, so the reduced model is better.
+
+kfold
+If using all 9 predictors with 10-fold cross-validation analysis. Samples are divided into 10 parts; 9 parts serves as training set and 1 part serve as test set. 10-fold cross-validation analysis will build 10 models with any 9 parts (170 samples) as training set and 1 part as test set. Then the average coefficients can be contained and then the RMSE of the final model is 441.3717 and R square is 0.6466633.
+If using 4 predictors, the method same as above. 10-fold cross-validation analysis will also build 10 models with any 9 parts (169 or 170 samples) as training set and 1 part as test set. Then the average coefficients can be contained and then the RMSE of the final model is 431.9616 and R square is 0.65618.
+As the smaller of the RMSE, the larger of R square, the better of the model. So reduced model with 4 predictors is better than full 9 predictors’ model.
+
+
+
+Result:
+R square/ R square adjusted ：
+R-squared (value range 0-1) describes the extent to which input variables explain output variables. In the linear regression, the larger R-squared is, the better the fitting degree is.However, as long as more variables are added, no matter whether the added variables are related to the output variables, R-Squared will either remain unchanged or increase. Therefore, we need to adjust R-squared, which adds a penalty term for variables that increase without improving the effect of the model.
+MSE & MAE:
+The mean square error (MSE) is the most commonly used regression loss function
+Mean Absolute error (MAE) is another loss function used in regression models. MAE is the sum of the absolute value of the difference between the target value and the predicted value
+In short, MSE is simple to calculate, but MAE has better robustness to outliers.
+Result :
+This study uses multiple linear regression model to predict the birth weight of newborns. The results show that infant birth weight is associated with variables such as low indicators, race, smoke, and uterine irritability (uterine irritability), but not with age, mother's weight in pounds at last menstrual period, number of previous premature labours and number of physician visits during the first trimester. 
+The adjusted R-squared of simple linear model is 0.6462, while it is 0.6482 for reduced linear model. The results show that the reduced linear model predicts a more accurate model with fewer independent variables and is more stable.

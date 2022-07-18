@@ -1,0 +1,270 @@
+---
+title: "DATA2002 ASM 2021"
+author: 
+- "Zhimin Liu 490238439"
+- "Yunshuo Zhang 500025673"
+- "Yi Ynag 500021295"
+- "Dahui Liu 490582941"
+- "Xinyi Jiang 500104299 "
+date: "31/10/2021"
+output:
+  xaringan::moon_reader:
+    css: ["default", "assets/sydney-fonts.css", "assets/sydney.css"]
+    self_contained: false # if true, fonts will be stored locally
+    seal: true # show a title slide with YAML information
+    includes:
+      in_header: "assets/mathjax-equation-numbers.html"
+    nature:
+      beforeInit: ["assets/remark-zoom.js", "https://platform.twitter.com/widgets.js"]
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: '16:9' # alternatives '16:9' or '4:3' or others e.g. 13:9
+      navigation:
+        scroll: false # disable slide transitions by scrolling
+---
+class: sydney-blue
+
+# Contents 
+.pull-left[
+- Data description 
+- Model selection 
+- Assumption checking 
+- Discussion of results 
+- Conclusion and Limitation 
+- Reference
+]
+.pull-right[
+```{r, echo = FALSE, out.height="200%", fig.height=50, out.width="200%", fig.align='center'}
+
+knitr::include_graphics("baby.jpg")
+``` 
+]
+---
+# Introduction
+
+---
+# Data description
+
+.scroll-output[
+Variable | Description
+------ | ------
+low | indicator of birth weight less than 2.5kg
+age | mother's age in years
+lwt | mother's weight in pounds at last menstrual period
+race | mother's race(1 = white, 2 = black, 3 = other)
+smoke | smoking status during pregnancy
+pt1 | number of previous premature labours
+ht | history of hypertension
+ui | presence of uterine irritability
+ftv | number of physician visits during the first trimester
+bwt | birth weight in grams
+
+
+
+```{r ,results = "hide", message = FALSE, echo=FALSE}
+library(MASS)
+birthwt
+```
+
+]
+
+
+
+---
+class: center
+# Model selection
+## Before Multiple Regression: plot
+
+.scroll-output[
+
+```{r, message = FALSE, echo = FALSE}
+library(tidyverse)
+cols=c("low","race","smoke","ptl","ht","ui")
+birthwt1=birthwt%>%
+  mutate(across(all_of(cols),factor))
+# pairplot=birthwt1%>%
+#   GGally::ggpairs() 
+# pairplot
+
+birthwt_continuous=birthwt%>%
+  select(bwt,age,lwt)
+birthwt_categorical=birthwt1%>%
+  select(low,race,smoke,ptl,ht,ui,bwt)
+
+birthwt_continuous%>%
+  GGally::ggpairs()
+```
+
+```{r }
+qtlcharts::iplotCorr(birthwt_continuous)
+```
+
+```{r}
+birthwt_categorical%>%
+  GGally::ggpairs()
+```
+]
+
+
+
+---
+
+
+
+## Basic Linear Model
+
+.scroll-output[
+.content-box-yellow[
+$$
+\bar{bwt}=\beta_0+\beta_1low+\beta_2age+\beta_3lwt+\beta4race+\beta_5smoke+\beta_6ptl+\beta_7ht+\beta_8ui+\beta_9ftv
+$$
+]
+
+```{r, message = FALSE, echo = FALSE}
+lm_birthwt=lm(bwt~.,data=birthwt)
+lm_birthwt
+```
+.content-box-yellow[
+$$
+\bar{bwt}=3613−1131.22∗low−6.25∗age+1.05∗lwt−100.91∗race−174.12∗smoke+81.34∗ptl−181.96∗ht−336.78∗ui−7.58∗ftv
+$$
+]
+
+]
+
+---
+## Model Selection
+.scroll-output[
+```{r}
+summary(lm_birthwt)
+```
+
+```{r}
+M1=lm(bwt~.,data=birthwt)
+drop1(M1,test="F")
+```
+
+
+```{r}
+M2=update(M1, . ~ . -ftv)
+M2
+```
+
+```{r, echo = FALSE}
+step_backward_birthwt=step(lm_birthwt,direction="backward",test="F")
+```
+
+```{r, echo = FALSE}
+step_backward_birthwt
+```
+
+
+.content-box-yellow[
+$$
+bwt¯=3586.50−1139.20low−97.34race−157.42smoke−303.19ui
+$$
+]
+]
+
+
+---
+# Assumption checking
+.scroll-output[
+.content-box-yellow[linearity]
+
+.content-box-blue[independence]
+
+.content-box-green[homoskedasticity]
+
+.content-box-purple[normality]
+## Hypothesis Test of age
+
+Assumptions: the residuals $\varepsilon_i$ follows a normal distribution with equal variance.
+
+```{r, echo = FALSE}
+library(ggfortify)
+autoplot(step_backward_birthwt,which=1:2)
+hist(birthwt$bwt,breaks=20)
+```
+
+
+Test statistic: $T=\frac{\bar{\beta_4}}{SE(\bar{\beta_4})}$which follows a t distribution with $n-p$ degrees of freedom under $H_0$.
+
+Observed Test Statistics: $t_0=-0.984$
+
+p-value: $2P(t_{n-p}>=|t_0|)=2P(t_{180}>=-0.984)=0.33>0.05$
+
+Conclusion: We do not reject as the p-value is quite large. Hence, there is no evidence to suggest that there is a significant relationship between birth weight and mother's age, so it could be dropped from the model.
+]
+---
+# Discussion of results
+## Comparing Full Model and Reduced Model
+.scroll-output[
+```{r}
+# ggfortify::autoplot(lm_birthwt_reduced,which=1:2)
+# ggfortify::autoplot(lm_birthwt,which=1:2)
+#what does the regression look like?
+
+sjPlot::tab_model(lm_birthwt,lm_birthwt_reduced)
+?tab_model
+
+```
+]
+---
+## k-fold
+.scroll-output[
+```{r, echo = False}
+#install.packages("caret")
+library(caret)
+cv_full=train(
+  bwt~.,data=birthwt,
+  method="lm",
+  trControl=trainControl(
+    method="cv",number=10,
+    verboseIter=FALSE
+  )
+)
+cv_full
+
+cv_reduced=train(
+  bwt~low+ui+race+smoke,data=birthwt,
+  method="lm",
+  trControl=trainControl(
+    method="cv",number=10,
+    verboseIter=FALSE
+  )
+)
+cv_reduced
+```
+]
+---
+# Conclusion and Limitation
+.scroll-output[
+.pull-left[
+## Limitation
+
+1. Since the data comes from Baystate Medical Center, it does not have good universality and integrity, which reduces the accuracy of the results.
+ 
+2. The reason why there is a fault occur in the residuals plot may be due to the difference between male and female. Because we did not consider gender differences in analysis variables, under other same conditions, birth weight of the male infants may be higher than that of the female infants, which could resulting in fault in the residuals plot.
+ 
+3. In order to study the main related factors affecting infant weight, we removed the relatively insignificant factors, which may lead to the deviation of the results.
+
+.pull-right[
+## Conclusion
+
+Therefore, in order to have a healthy body when the baby is born, the mother should pay more attention to maintaining a healthy body and adequate nutrition during pregnancy. At the same time, the mother should maintain good living habits and mood during pregnancy, so as to create a good growth environment for the baby and be relatively strong at birth.
+
+]
+
+]
+
+---
+class: center middle
+# Care for the Health of Pregnant Women
+
+```{r, echo = FALSE, out.height="80%", fig.height=5, out.width="80%",fig.align='center'}
+
+knitr::include_graphics("mom.jfif")
+``` 
+
