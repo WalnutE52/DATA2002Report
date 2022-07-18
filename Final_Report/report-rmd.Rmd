@@ -1,0 +1,169 @@
+---
+title: "presentation_new"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+# Data Description
+
+### IDA(Initial Data Analysis)
+
+```{r}
+birthwt=MASS::birthwt
+?birthwt
+```
+
+```{r}
+#factorize categorical variables
+library(tidyverse)
+birthwt$race=factor(birthwt$race,labels=c("white","black","other"))
+birthwt$smoke=factor(birthwt$smoke,labels=c("No","Yes"))
+birthwt$ht=factor(birthwt$ht,labels=c("No","Yes"))
+birthwt$ui=factor(birthwt$ui,labels=c("No","Yes"))
+birthwt$low=factor(birthwt$low,labels=c("No","Yes"))
+
+```
+
+```{r}
+#rename columns to make it readable
+colnames(birthwt) <- c("birthwt.below.2500", "mother.age",
+"mother.weight", "race",
+"mother.smokes", "previous.prem.labor",
+"hypertension", "uterine.irr",
+"physician.visits", "birthwt.grams")
+
+```
+
+\# birthwt%>%
+
+\# ggplot()+
+
+\# aes(x=birthwt.below.2500,y=birthwt.grams,color=birthwt.below.2500,group=birthwt.below.2500)+
+
+\# labs(x="Low Birth Weight",y="BirthWeight",color="")+
+
+\# geom_boxplot()+
+
+\# geom_hline(yintercept=2500,linetype="dashed", color = "red", size=0.5)+
+
+\# scale_y\_continuous(limits=c(1000,5000),breaks=seq(1000,5000,by=500))+
+
+\# theme_bw()
+
+# Appropriate Model Selection+Assumption Checking
+
+## pairplot
+
+```{r}
+#pairplot
+GGally::ggpairs(birthwt)
+```
+
+## Full model
+
+```{r}
+#full model
+##without low, because low is the outcome
+lm_full<- lm (birthwt.grams ~ . - birthwt.below.2500, data=birthwt)
+summary(lm_full)
+equatiomatic::extract_eq(lm_full,use_coefs = T) #we should further remove insignificant factors
+equatiomatic::extract_eq(lm_full)
+```
+
+## Reduced Model
+
+```{r}
+#reduced model
+#variable selection using AIC
+lm_reduced=step(lm_full,direction="both",test="F",trace=F)
+summary(lm_reduced)
+
+equatiomatic::extract_eq(lm_reduced,use_coefs = T,font_size="tiny")
+
+```
+
+```{r}
+#assumption checking of reduced model
+library(ggfortify)
+autoplot(lm_full,which=1:2)
+autoplot(lm_reduced,which=1:2)#QUESTION:should we check assumption before the linear model?
+```
+
+## Log Model
+
+```{# {r}
+# #log model
+# birthwt_log=lm (log(birthwt.grams) ~ . - birthwt.below.2500, data=birthwt)
+# summary(birthwt_lm)
+# autoplot(birthwt_log,which=1:2)
+```
+
+```{r}
+# #assumption checking of log model
+# birthwt_log_step=step(birthwt_log,test="F")
+# equatiomatic::extract_eq(birthwt_log_step,use_coefs = T) 
+# #assumption checking of log model
+# summary(birthwt_log_step)
+# autoplot(birthwt_log_step,which=1:2)
+```
+
+# Result
+
+```{r}
+#hist(birthwt$birthwt.grams,breaks=20)
+```
+
+```{r}
+library(caret)
+
+cv_full=train(
+  birthwt.grams ~ . - birthwt.below.2500,
+  data=birthwt,
+  method="lm",
+  trControl=trainControl(
+    method="cv",number=10,
+    verboseIter=FALSE
+    )
+  )
+
+cv_full
+
+cv_reduced=train(
+  lm_reduced$call$formula,
+  data=birthwt,
+  method="lm",
+  trControl=trainControl(
+    method="cv",number=10,
+    verboseIter=FALSE
+    )
+  )
+
+cv_reduced
+
+
+# cv_reduced_log_linear=train(
+#   birthwt_log_step$call$formula,
+#   data=birthwt,
+#   method="lm",
+#   trControl=trainControl(
+#     method="cv",number=10,
+#     verboseIter=FALSE
+#     )
+#   )
+# 
+# cv_reduced_log_linear
+
+df <- bind_rows(cv_full$results, cv_reduced$results)
+df$model <- c("full", "reduced")
+library(ggpubr)
+p1 <- ggplot(df, aes(x=model, y=RMSE, group=1)) + geom_line() + geom_point()
+p2 <- ggplot(df, aes(x=model, y=MAE , group=1)) + geom_line() + geom_point()
+
+ggarrange(p1, p2, nrow = 1)
+```
+
+```{r}
+sjPlot::tab_model(lm_full, lm_reduced,digits=4,show.ci=FALSE, show.aic=TRUE, dv.labels=c("Full Model","Reduced Model"),show.r2=TRUE)
+?tab_model
+```
